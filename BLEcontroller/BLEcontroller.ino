@@ -35,6 +35,7 @@ extern uint8_t packetbuffer[];
 
 void setup(void) {
   pixels.begin();  // INITIALIZE NeoPixel strip object (REQUIRED)
+  pixel.setBrightness(255);
 
   Serial.begin(115200);
   while (!Serial) delay(10);  // for nrf52840 with native usb
