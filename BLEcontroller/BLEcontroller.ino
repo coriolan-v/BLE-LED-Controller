@@ -1,22 +1,19 @@
 #include <bluefruit.h>
 
-#include <Adafruit_NeoPixel.h>
+#include <FastLED.h>
 #ifdef __AVR__
 #include <avr/power.h>  // Required for 16 MHz Adafruit Trinket
 #endif
 
 // Which pin on the Arduino is connected to the NeoPixels?
-#define PIN MOSI  // On Trinket or Gemma, suggest changing this to 1
-
+#define DATA_PIN MOSI
 // How many NeoPixels are attached to the Arduino?
-#define NUMPIXELS 170  // Popular NeoPixel ring size
-
+#define NUM_LEDS 100
 // When setting up the NeoPixel library, we tell it how many pixels,
 // and which pin to use to send signals. Note that for older NeoPixel
 // strips you might need to change the third parameter -- see the
 // strandtest example for more information on possible values.
-Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
-
+CRGB leds[NUM_LEDS];
 
 
 // OTA DFU service
@@ -34,11 +31,11 @@ void printHex(const uint8_t *data, const uint32_t numBytes);
 extern uint8_t packetbuffer[];
 
 void setup(void) {
-  pixels.begin();  // INITIALIZE NeoPixel strip object (REQUIRED)
-  pixel.setBrightness(255);
+   FastLED.addLeds<WS2811, DATA_PIN, BRG>(leds, NUM_LEDS);
+    FastLED.setBrightness(255);
 
   Serial.begin(115200);
-  while (!Serial) delay(10);  // for nrf52840 with native usb
+  //while (!Serial) delay(10);  // for nrf52840 with native usb
 
   Serial.println(F("Adafruit Bluefruit52 Controller App Example"));
   Serial.println(F("-------------------------------------------"));
@@ -58,6 +55,18 @@ void setup(void) {
   Serial.println(F("Please use Adafruit Bluefruit LE app to connect in Controller mode"));
   Serial.println(F("Then activate/use the sensors, color picker, game controller, etc!"));
   Serial.println();
+
+  for(int i = 0; i<NUM_LEDS; i++)
+  {
+     leds[i] = CRGB::Red;
+     FastLED.show();
+  }
+
+  for(int i = 0; i<NUM_LEDS; i++)
+  {
+     leds[i] = CRGB::Black;
+     FastLED.show();
+  }
 }
 
 void startAdv(void) {
@@ -105,6 +114,14 @@ void loop(void) {
     uint8_t red = packetbuffer[2];
     uint8_t green = packetbuffer[3];
     uint8_t blue = packetbuffer[4];
+
+    Serial.print("red = "); Serial.println(red);
+
+ Serial.print("green = "); Serial.println(green);
+
+ Serial.print("blue = "); Serial.println(blue);
+
+    
     Serial.print("RGB #");
     if (red < 0x10) Serial.print("0");
     Serial.print(red, HEX);
@@ -113,19 +130,24 @@ void loop(void) {
     if (blue < 0x10) Serial.print("0");
     Serial.println(blue, HEX);
 
-    pixels.clear();  // Set all pixel colors to 'off'
+    //pixels.clear();  // Set all pixel colors to 'off'
 
     // The first NeoPixel in a strand is #0, second is 1, all the way up
     // to the count of pixels minus one.
-    for (int i = 0; i < NUMPIXELS; i++) {  // For each pixel...
+    for (int i = 0; i < NUM_LEDS; i++) {  // For each pixel...
 
       // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
       // Here we're using a moderately bright green color:
-      pixels.setPixelColor(i, pixels.Color(red, green, blue));
+      //pixels.setPixelColor(i, pixels.Color(red, green, blue));
+      leds[i].red = red;
+       leds[i].green = green;
+        leds[i].blue = blue;
 
-      pixels.show();  // Send the updated pixel colors to the hardware.
+
+      //pixels.show();  // Send the updated pixel colors to the hardware.
 
     }
+     FastLED.show();
     delay(1);  // Pause before next pass through loop
   }
 
